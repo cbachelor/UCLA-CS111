@@ -1,0 +1,108 @@
+NAME: Christopher Bachelor
+EMAIL: cbachelor@ucla.edu
+ID: 004608570
+
+Files included in the lab1a-004608570.tar.gz file:
+
+lab1a.c:
+
+This c source file contains the whole implementation for the terminal
+I created in this lab. When the executable is run after creating it
+with 'make'(see below), without any flags/commands the program will
+just execute a basic full duplex terminal I/O. It will manipulate some
+of the terminal settings at the start using tcgetattr(3),
+tcsetattr(3), and will put the keyboard input into
+character-at-a-time, no-echo mode output. The process involved
+constantly reading a buffer from stdin using read(2), and writing it
+out to stdout one character at a time using write(2). Due to the
+change in terminal settings, whenever the program received a <CR> or
+<LF> from stdin, it mapped it to <CR><LF> and used it as the
+output. When detecting a escape sequence defined by (^D), it will
+restore normal terminal modes via tcsetattr(3) and exit() with a error
+code of 0 for normal execution, 1 for failure.
+
+With the '--shell' command passed to the program (where the arguments
+are handled by getopt_long()), the program will fork() into a new
+process, and the child process will run "/bin/bash" via execvp(). In
+the process, to allow for interprocess communication, 2 unidirectional
+pipes were set up, to allow communication between the parent terminal
+and the child shell. Input from the keyboard was sent to the shell as
+well as echoed to stdout, and output from the shell would be received
+in the parent and echoed out as well, and poll() was used to make sure
+both can happen at the same time.
+
+With the '--shell' option enabled, <CR> or <LF> was sent to the shell
+as <LF>, and <LF> output from the shell to the parent would be
+processed as <CR><LF> and echoed to stdout. Interrupt character (^C)
+would kill the shell by sending a SIGINT, and EOF from keyboard(^D)
+would close the pipe to the shell, and once data processing is done,
+terminates the shell. The shell would also terminate if SIGPIPE is
+received from the keyboard as well.
+
+With '--shell' enabled, the process exits by printing SHELL EXIT
+SIGNAL=# STATUS=# Where the first '#' is the code for the signal if it
+exited via a signal, and the second '#' would be if it exited via a
+specific exit status (usually 0 for normal execution, 1 for system
+call failure).
+
+These numerous cases were tested by testing out permutations of inputs
+in both '--shell' enabled and disabled, and also by using gdb.
+
+Makefile:
+
+By calling the default 'make' command the Makefile will produce an
+executable in gcc called 'lab1a'. By running 'make dist' it will
+create a tarball called "lab1a-004608570" with the three files
+described in this README. Running 'make clean' will remove all of the
+files that can be created by this makefile, which are the tarball and
+the executable.
+
+README:
+
+This file. Contains file information, methodology, and sources.
+
+----------------------------------------------------------------------------
+Sources I used as references
+
+1. Extensive reference to Man pages for many functions
+
+2. Piazza - many useful help and tips from the student forum
+
+3.
+https://www.gnu.org/software/libc/manual/html_node/Noncanon-Example.html
+- I used this gnu site to what Noncanonical terminals were, and how to
+set them up. The site had a nice exmaple of how to properly mask the
+bits for the parameters, when using the tcsetattr() functions.
+
+4.  https://en.wikipedia.org/wiki/End-of-file I referenced wikipedia
+to understand what the characteristics of EOF meant and what ASCII
+code it corresponded to.
+
+
+5.
+http://stackoverflow.com/questions/21620406/how-do-i-pause-my-shell-script-for-1-second-before-continuing
+I used the 'sleep' linux command to test out my shell to see how my
+program would output if I have input from the keyboard and input
+coming from the shell output at the same tie. This stackoverflow page
+gave me how to use the sleep command.
+
+6.
+http://stackoverflow.com/questions/27306764/capturing-exit-status-code-of-child-process
+This stackoverflow site had examples of waitpid() and how to get the
+correct exit codes from the child processes that were terminating.
+
+7.  http://linuxcommand.org/lts0080.php This site had an example of
+how to use the kill command in bash to send a specific signal to
+bash. I used this command to test how my program would react when it
+received a SIGPIPE.
+
+8.
+https://www.gnu.org/software/libc/manual/html_node/Process-Completion.html
+This gnu site also had examples of how to use waitpid() and how to set
+it up properly so I can get the proper exit codes so I refered to this
+site.
+
+9.
+https://www.gnu.org/software/libc/manual/html_node/Creating-a-Pipe.html#Creating-a-Pipe
+This gnu site had extensive examples of how to set up the pipes with
+forked processes which was very useful.
