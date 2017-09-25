@@ -9,4 +9,4 @@ the methods I followed to derive my solutions. All code was ran on the UCLA SEAS
 
 Lab 1 - Client/Server shell 
 Lab 2 - Parallelism analysis 
-Lab 3 - File system analysis 
+Lab 3 - File system analysis (Completed with my parter Conner Borden)
