@@ -1,5 +1,5 @@
 #NAME: Connor Borden Chris Bachelor
-#EMAIL: connorbo97@g.ucla.edu cbachelor@ucla.edu
+
 lab3a: lab3a.c ext2_fs.h
 	gcc -g lab3a.c -o lab3a
 
