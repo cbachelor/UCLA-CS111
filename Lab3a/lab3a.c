@@ -1,6 +1,5 @@
 //NAME: Connor Borden Chris Bachelor
-//EMAIL: connorbo97@g.ucla.edu cbachelor@ucla.edu
-//ID: 004603469 004608570
+//cbachelor@ucla.edu
 #include <sys/types.h>
 #include <time.h>
 #include <string.h>
