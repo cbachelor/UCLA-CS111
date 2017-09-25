@@ -1,0 +1,16 @@
+NAME: Connor Borden Christopher Bachelor
+EMAIL: connorbo97@g.ucla.edu cbachelor@ucla.edu
+ID: 004603469 004608570
+
+Contents:
+lab3a.c: Source file containing implementation for analyzing
+a ext2 file system
+
+Makefile: contains default, dist and clean options
+
+README: this file
+
+ext2_fs.h: provided header file
+
+Sources:
+Documentation provided in spec
