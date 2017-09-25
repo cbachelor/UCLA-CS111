@@ -1,9 +1,7 @@
 #!/usr/bin/python
 
 """Source code for CS111 Project 3b
-   By Christopher Bachelor & Connor Borden
-   cbachelor@ucla.edu
-   UCLA ID: 004608570					
+   By Christopher Bachelor & Connor Borden					
 """
 
 import sys
