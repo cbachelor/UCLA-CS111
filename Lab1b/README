@@ -1,0 +1,55 @@
+NAME: Christopher Bachelor
+EMAIL: cbachelor@ucla.edu
+ID: 004608570
+
+***************************************************************************************
+Since I was a day late in submitting the lab, I will like to use my first slip day pass for this assignment.
+*************************************************************************************
+
+Files included in the lab1b-004608570.tar.gz file:
+
+lab1b-client.c:
+
+This source file contains the code for the client side of the program. The program uses sockets to connect to the server, and uses poll to maintain both keyboard and server  input. It also handles conversion of <cr> and <lf>. With the --port=# option you specify the port you connect to in localhost, --log=filename to write TCP communication I/O between server and client, and --encrypt==filename to specify the file that will be used for encryption. Note that the server must run first before the client runs, and they must have the same port number
+
+lab1b-server.c:
+
+This source file contains the code for the server side of the program. First, it handles communication via sockets with the client, and then similar to Lab1a, it forks a bash process and uses pipes to communicate to it, which is input from the client. It also uses poll to take in multiple inputs as well. --port=# specifies the port number in localhost, and --encrypt=filename also specifies the file that will be used for encryption. Note that the server must run first before the client runs, and they must have the same port number.
+
+my.key:
+	This file contains a 16 byte character string that is used by the encryption option of the program in the server and the client. THey both use the same key. 
+
+README:
+
+	This file. Contains file information, methodology, and sources.
+
+Makefile:
+
+By calling the default 'make' command the Makefile will produce two 
+executables in gcc called 'lab1b-client', and 'lab1b-server', each respective of the server program and client program, with the -lmcrypt flag. You can also frun 'make name' with the executable name to make the one you wish. By running 'make dist' it will create a tarball called "lab1b-004608570" with the three files
+described in this README. Running 'make clean' will remove all of the
+files that can be created by this makefile, which are the tarball and
+the executable.
+
+
+-----------------------------------------------------------------------------------
+For this project I used a lot of resources in the man pages of all the different libraries I used.
+I also used:
+
+1. http://stackoverflow.com/questions/2865583/gethostbyname-in-c
+
+This page helped me how to used gethostbyname since I was confused on the syntax of the function.
+
+
+2. http://stackoverflow.com/questions/4246588/fprintf-like-function-for-file-descriptors-i-e-int-fd-instead-of-file-fp
+Since I wanted to print out to a custom file descriptor with fprintf format, I used the site to find out about dprintf.
+
+3. http://beej.us/guide/bgnet/output/html/multipage/sockaddr_inman.html
+This site had alot of good information on the structs used for socket networking/
+
+4.http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
+This was the site I used the most since it had all the tutorial on how to set up sockets and TCP connections.
+
+5. Powerpoint slides on CCLE also had good tutorials I used.
+
+6. Piazza: All the helpful student and TA posts.
