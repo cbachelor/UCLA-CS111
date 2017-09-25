@@ -1,0 +1,218 @@
+NAME: Christopher Bachelor
+EMAIL: cbachelor@ucla.edu
+ID: 004608570
+
+***********************************************
+I will use my second slip day for this project since I was a day late
+in turning it in.
+**********************************************
+
+Files included in lab2a-004608570.tar.gz file:
+
+README: This file, includes description of files included, sources,
+and answers to questions.
+
+lab2_add.c: C program that uses multithreading to add 1 to a counter
+and subtract 1 from counter iteration number of times. Uses Pthreads
+and time functions to record the time it takes for the operation to
+complete. Pass with '--threads=NUMTHREADS' to decide the number of
+threads, '--iterations-NUMITERATIONS' to choose the number of
+iterations, and '--yield' to yield before every critical section
+operations. Add '--sync=[m|s|c]' to add mutexes, test and set atomic
+operations, or compare and swap operations, respectively.
+
+lab2_list.c: C program that uses multithreading to insert elements
+(generated randomly) to a shared linked list, find the lenght of the
+linked list, lookup an element of a linked list, and delete elements
+in the linked list, using functions described in SortedList.h. Uses
+Pthreads and time functions to record the time it takes for the
+operations to complete. Uses circular doubly linked lists for the
+implementation. Pass with '--threads=NUMTHREADS' to decide the number
+of threads, '--iterations-NUMITERATIONS' to choose the number of
+iterations, and '--yield=[idl]' to yield in certain SortedList.h
+functions, described below. Pass 'sync==[m|s]' to implement mutex or
+spin lock as the synchronization options, respectively. Prints output
+in csv form. WIthout synchronization options results will likely not
+be accurate.
+
+SortedList.h: Defines the functions used in SortedList.c and
+lab2_list.c. Each operation uses the linked list. Given 'i' as an
+option to yield in lab2_list.c it will yield in inserts, for 'd'
+yields in critical section of deletes,'l' implements yield in the
+lookup and length functions.
+
+SortedList.c: Implementation of the above header file.
+
+Makefile: Run 'make' to make two distributables, lab2_add and
+lab2_list. 'make tests' will run test cases for each executable, and
+saves them into corresponding .csv files. 'make graphs' will use
+gnuplot to plot the .csv files. 'make dist' will make a tarball with
+all the files. 'make clean' will delete make generated files.
+
+lab2_add.gp: Script used to make the plots of lab2_add.csv with gnuplot.
+
+lab2_list.gp: Script used to make the plots of lab2_list.csv with gnuplot.
+
+lab2_add.csv: Comma separated values of outputs from lab2_add
+executable after calling 'make tests'
+
+lab2_list.csv: Comma separated values of outputs from lab2_list
+executable after calling 'make tests'
+
+
+***The following *.png files are outputs of 'make graphs'. Explanation
+   of files from spec***
+
+lab2_add-1.png: threads and iterations required to generate a failure
+(with and without yields)
+
+lab2_add-2.png: average time per operation with and without yields.
+
+lab2_add-3.png: average time per (single threaded) operation vs. the
+number of iterations.
+
+lab2_add-4.png: threads and iterations that can run successfully with
+yields under each of the synchronization options.
+
+lab2_add-5.png: average time per (protected) operation vs. the number
+of threads.
+
+lab2_list-1.png: average time per (single threaded) unprotected
+operation vs. number of iterations (illustrating the correction of the
+per-operation cost for the list length).
+
+lab2_list-2.png: threads and iterations required to generate a failure
+(with and without yields).
+
+lab2_list-3.png: iterations that can run (protected) without failure.
+
+lab2_list-4.png: (length-adjusted) cost per operation vs the number
+of threads for the various synchronization options.
+
+--------------------------------------------------------------------
+Questions 2.1.1 1). After running a variation of tests after changing
+the values of number of iterations and number of threads, I realized
+that having more threads lead to bigger and more failures compared to
+small number of threads, and in the case of one thread, it never
+fails. Also increasing iterations results in more failure as
+well. This clearly happens because the more number of threads, and
+more number of iterations, you will run the critical section more
+times, which are prone to race conditions. When the number of threads
+and iterations are smaller, you have less occasions in which race
+conditions occur.
+
+2). This is simply because the critical section, prone to race
+conditions, is not run as much when you have smaller iterations, so
+you run into errors less often statistically. This means less chances
+for interrupts that can lead to race conditions, or any other factor
+in which error can occur in the critical section.
+
+2.1.2 1). The yield runs are so much slower because every time an add
+    operation is called the thread yields to the CPU and is placed in
+    the back of the queue. Yielding is a context switch, meaning the
+    system call itself has alot of overhead, since the operations like
+    interrupts and memory management per local data for the thread has
+    to be copied every time yield occurs.
+
+2).All of the additional time is going to the call of the system call
+when it yields, where the CPU has to perform a context switch every
+time that yield is called.
+
+3, 4). The per-operation timings are not going to be very accurate
+with yield, so no. The reason this is the case is that the overhead in
+the CPU calling yield is a significant time wasted for the operation
+itself, so the value will not be accurrate. The context switches are
+basically taking more time than the operations.
+
+2.1.3 1). A couple of things cause this effect. Without yielding,
+    increase in iterations means that more time is spent iterating
+    than time creating threads. The cost of the overhead in creating a
+    thread is diminished per increase in operation, since an operation
+    is a function of the number of threads and the number of
+    iterations. Since creating threads is significant overhead time,
+    if instead the number of iteration increases, then that overhead
+    can be offset by more factors of time being spent on
+    iterations. Hence the average cost per operation drop as
+    iteratoins increase, since the weight of the overhead is
+    lessened. Another possible factor to this is the use of locality
+    that may come with iterations, since we are utilizing spacial
+    locality with our for loops.
+
+2). Mathematically, the "correct" or best cost that can be implemented
+by changing iterations is to increase iterations to infinity, since
+increasing iterations is decreasing average cost per operation. While
+unrealistic, infinite iterations will give us the true cost of each
+operation (in this case, the add function);
+
+2.1.4 1).Since all the options deal with adding safeguards to protect
+    from race conditions, lower number of threads means that you run
+    into less occurrences where a thread needs to wait for another
+    thread, since there are few threads that are waiting to enter the
+    critical section. Therefore the waiting time per thread is small
+    since lock acquisition happens fast. With few threads there can be
+    cases where each thread can have its own CPU as well, making
+    operations run concurrently outside of critical sections.
+    
+    2). Opposite to part 1, with more threads, it means that each
+    thread has to wait longer to enter the critical section. Since the
+    different locks implemented provide mutual exclusion, each thread
+    needs to wait for other threads to end before it can enter the
+    critical section. Also with more threads and less CPU cores
+    threads may not run as concurrently since not every thread has
+    access to its own CPU.
+
+2.2.1 The cost per mutex-protected operation vs number of threads in
+    Part 1 with adds seemed to flatten out as a flat line as threads
+    increased because the operation is the same every time you call
+    it, and the increase in operations offsets the cost of mutex
+    acquisition between the threads due to a constant add operation
+    that doesnt change. In Part 2 the cost per operation increases
+    linearly as the number of threads increases, and this is because
+    more threads means more contention for the mutex, and since we are
+    calling 4 different SortedList functions that each require the
+    same mutex, there is increased blocked time. Also a bigger list
+    takes more time to traverse as well. The Part 2 graph has a steady
+    increase in the operation time, while Part 1 graph starts linear,
+    and once it hit a certain amount of threads it flattens out. The
+    reason for the Part 1 starting off linear is that with smaller
+    amount of threads lock acquisition was rarely a cause for
+    blocking, and in Part 2 as threads increase the amount of blocking
+    increases as a function of time.
+
+2.2.2 The cost of a mutex is increasing in a linear curve while the
+    cost of a spin lock increases similarly but isnt as clean and
+    constant slope as a mutex. The mutex graph is a straight line of
+    positive slope while spin lock has positive slope but it zigzags
+    as it increases. In terms of relative rates of increases they
+    increase almost at the same rate, with mutexes increasing at a
+    higher cost per operation and spin lock increasing slightly
+    lower. The differences here happen from the fact that mutex
+    operations are constant operations that take relatively a same
+    amount of time and blocked threads are immediately notified when a
+    lock is freed. With spin locks, they operate on while loops, and
+    are not immediately notified about the lock being released, which
+    can result in the inconsistent cost per operation increase.
+
+
+--------------------------------------------------------------------
+Sources used:
+
+1). https://computing.llnl.gov/tutorials/pthreads/ This was the
+tutorial given in the spec, and I used it to refer to how to use the
+pthread functions
+
+2). https://www.tutorialspoint.com/c_standard_library/c_function_strcmp.htm
+I used this page to remind myself how to use strcmp.
+
+3). https://www.tutorialspoint.com/c_standard_library/c_function_rand.htm
+I used the rand function to generate keys, so I used this page.
+
+4). https://www.tutorialspoint.com/c_standard_library/c_function_strcat.htm
+Used this tutorial to concatenate strings which I used when
+manipulating outputs
+
+5). All of the man pages for the libraries that I used
+
+6). Piazza posts for questions and references
+
+7). Discussion slides on CCLE
