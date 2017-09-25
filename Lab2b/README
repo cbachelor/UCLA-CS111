@@ -1,0 +1,98 @@
+NAME: Christopher Bachelor
+EMAIL: cbachelor@ucla.edu
+ID: 004608570
+
+Files included in lab2b-004608570.tar.gz file:
+
+README: This file, includes description of files included, sources,
+and answers to questions.
+
+lab2_list.c: C program that uses multithreading to insert elements
+(generated randomly) to a shared linked list, find the length of the
+linked list, lookup an element of a linked list, and delete elements
+in the linked list, using functions described in SortedList.h. Uses
+Pthreads and time functions to record the time it takes for the
+operations to complete. Uses circular doubly linked lists for the
+implementation. Pass with '--threads=NUMTHREADS' to decide the number
+of threads, '--iterations-NUMITERATIONS' to choose the number of
+iterations, and '--yield=[idl]' to yield in certain SortedList.h
+functions, described below. Pass 'sync=[m|s]' to implement mutex or
+spin lock as the synchronization options, respectively. To further optimize, pass in  'lists=NUMLISTS' to divide the linked list into NUMLISTS sublists, each with their own synchronization option. Also with synchronization turned on, measures the average time it takes to acquire a lock. Prints output
+in csv form. Without synchronization options results will likely not
+be accurate.
+
+SortedList.h: Defines the functions used in SortedList.c and
+lab2_list.c. Each operation uses the linked list. Given 'i' as an
+option to yield in lab2_list.c it will yield in inserts, for 'd'
+yields in critical section of deletes,'l' implements yield in the
+lookup and length functions.
+
+SortedList.c: Implementation of the above header file.
+
+Makefile: Run 'make' to make distributable, lab2_list. 'make tests' will run test cases for the executable, and
+saves them into lab2b_list.csv file. 'make graphs' will use
+gnuplot to plot the .csv files using the script lab2b_list.gp. 'make dist' will make a tarball with
+all the files. 'make clean' will delete make generated files. 'make profile' will use the gperftools profiler to capture the CPU cycles spent in the function that the threads call, and saves the output into profile.out.
+
+lab2b_list.gp: Script used to make the plots of lab2_list.csv with gnuplot.
+
+lab2b_list.csv: Comma separated values of outputs from lab2_list
+executable after calling 'make tests'
+
+profile.out: Output of 'make profile'. Records profiling data on the function that the pthread is called into.
+
+
+***The following *.png files are outputs of 'make graphs'. Explanation
+   of files from spec***
+
+lab2b_1.png ... throughput vs number of threads for mutex and spin-lock synchronized list operations.
+lab2b_2.png ... mean time per mutex wait and mean time per operation for mutex-synchronized list operations.
+lab2b_3.png ... successful iterations vs threads for each synchronization method.
+lab2b_4.png ... throughput vs number of threads for mutex synchronized partitioned lists.
+lab2b_5.png ... throughput vs number of threads for spin-lock-synchronized partitioned lists.
+
+--------------------------------------------------------------------------------------------
+ANSWERS TO QUESTIONS IN PROJECT 2B
+
+2.3.1
+
+	In the 1 and 2-thread list tests, most of the cycle is spent in the actual calculation of insertin, deleting, and looking up lists. The reason the throughput decreases as threads go up is that there is more time spent on handling synchronization options of mutexes and spin locks, compared to in smaller threads these synchonization overhead barely exist because it is not necessary to aacquire or release lock as much since there aren't many threads.
+
+	The most expensive parts of the code is managing linked lists because each operation has O(N) complexity, since you need to traverse through the whole list to sort insert, delete, and lookup information on the list.
+
+	Most of the cycles in high-thread spin-lock tests are just wasted in the while loop while the program waits for the test-and-set parameters are unlocked, and after a timer interrupt causes a context switch to run other threads so the test-and-set can be unlocked. Since most of the time is spent waiting, the throughput decreases.
+
+	In the high-thread mutex tests, most of the time is spent context swithching to another thread while a mutex is locked. Also managing mutexes can be a large overhead issue as well, and similar to spin lock waiting for mutexes to unlock can decrease throughput 
+
+	Also important to note is that in my plot in lab2b_1.png, the mutex and spin-lock versions have roughly the same throughput, and sometimes spin-lock can have a better throughput. The reason this happens is because the code was tested on the linux server with 32 cores, so the up to 16 cores that is included in the plot is insufficient to properly observe how spin-lock implementation performs badly. I ran additional tests to prove that spin lock does perform badly when I ran with 64 threads:
+
+	./lab2_list --threads=64 --iterations=1000 --sync=m
+	list-none-m,64,1000,1,192000,23654293461,123199,1178707839611
+
+	./lab2_list --threads=64 --iterations=1000 --sync=s
+	list-none-s,64,1000,1,192000,116492363579,606731,0
+
+	As you can see in the 7th parameter, the spin lock is over 10x as slower in completing operations when there are more threads than CPUs. 
+
+2.3.2
+
+	With the profiler on the spin lock operation, we can see in profile.out that the most CPU cycles are spent in __sync_lock_test_and_set operation, where you just while loop till the lock is unlocked. While most of the time is spent there, some time is spent in the SOrtedList_insert and SortedList_delete function as well, since it requires looping through each linked list node.
+
+	This operation becomes so expensive with large number of threads because without any yielding, in the while loop in which it is called it just waits CPU cycles until a context switch happens from preemptive scheduling, and hopes that the next thread that runs will unlock the spin-lock. Thus it becomes a repeat of check lock, loop, context switch, loop, etc.
+
+2.3.3
+	
+	With lower amount of threads, the locks aren't as contested as much, since there aren't many threads waiting for the lock at once. With many threads, every other thread except for one is waiting constantly to acquire the lock, and must wait in a single-file line, so the wait-for-mutex time increases.
+
+	Its because no matter how many threads are waiting, operations are being completed by at least one thread at a constant pace, so the increase in threads, which corresponds to increase in number of completed operations, offset eachother.
+
+	Overall, each thread waits longer for its turn as the number of threads increase, hence the wait time per operation increasing fast. At the same time, however, completion time per operation is flattens out to be a constant time since operations are being completed by some thread no matter how long it waits, and the increase in time waiting is offset by the increase in completion time per operation.  
+
+2.3.4
+
+	The throughput of the synchronized methods increase as number of lists increase, for all ranges of threads. This happens because the linked list is integrated as a fine-grained list compared to the previous coarse-grained approach. Since each sublist is naturally smaller than the large list, every list operation speeds up since traversing the list takes shorter time. In addition, having locks on every sublist makes lock contention occur less frequently, since there are more locks to work with that threads can share.
+
+	The throughput would probably keep increasing up to a certain point, which is when you have a sublist for each CPU in the machine for each thread to use. When you have more sublists than CPU's, the throughput won't likely have any difference since you can't parallelize further.
+
+	N-way partitioned list vs (1/N) threads: Looking at the plots, it seems pretty close for that relationship to be true, which would make sense. If there are 8 sublists and 16 threads, there would be 2 threads each waiting for a sublist on average. With 1 sublist and 2 threads, the ration would remain the same as well. So in the big picture this is a pretty close relation, however in some cases possibly handling of mutexes and context switches can make this relationship not hold, if cache sizes and paging may come into play.
+
